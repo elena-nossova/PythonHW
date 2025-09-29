@@ -5,7 +5,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.common.by import By
 
 service = FirefoxService(GeckoDriverManager().install())
-driver = webdriver.Firefox(service=service)
+driver = webdriver.Firefox()
 
 driver.get("http://the-internet.herokuapp.com/login")
 sleep(2)
