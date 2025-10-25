@@ -21,18 +21,20 @@ class YouGileAPI:
             "password": self.password
         }
         resp = requests.post(url, json=auth_data)
-        if resp.status_code != 200:
-            return False
+        assert resp.status_code == 200
 
         data = resp.json()
         self.company_id = data['content'][0]['id']
-        return True
+        assert self.company_id
+        return self.company_id
 
-    def authenticate(self):
-        if not self.company_id:
-            return False
+    def authenticate(self, company_id=None):
+        if company_id:
+            self.company_id = company_id
 
-        auth_url = f"{self.base_url}/auth/keys/get"
+        assert self.company_id
+
+        auth_url = f"{self.base_url}/auth/keys"
         auth_data = {
             "login": self.login,
             "password": self.password,
@@ -40,11 +42,11 @@ class YouGileAPI:
         }
 
         resp = requests.post(auth_url, json=auth_data)
-        if resp.status_code != 200:
-            return False
+        assert resp.status_code in [200, 201]
 
         resp_data = resp.json()
-        self.api_key = resp_data[0]['key']
+        self.api_key = resp_data['key']
+        assert self.api_key
         return True
 
     def get_projects(self, limit=50, offset=0, include_deleted=False):
@@ -99,18 +101,15 @@ class YouGileAPI:
         return requests.put(url, json=update_data, headers=headers)
 
     def delete_key(self):
-        if not self.api_key:
-            return False
+        assert self.api_key
 
-        url = f"{self.base_url}/auth/keys/delete"
+        url = f"{self.base_url}/auth/keys/{self.api_key}"
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
 
-        resp = requests.post(url, headers=headers)
-        if resp.status_code != 200:
-            return False
+        resp = requests.delete(url, headers=headers)
+        assert resp.status_code == 200
 
         self.api_key = None
-        return True
